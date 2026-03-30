@@ -33,6 +33,9 @@ export const comments = (req,res) => {
                 error: err
             });
         }
+        if (!result || result.length === 0) {
+            return res.status(404).json({ message: "Task not found" });
+        }
         const data = {
             task_id: result[0].id,
             user_id: decoded.id,
