@@ -164,3 +164,55 @@ export const find = (req,res) => {
         });
     })
 }
+
+export const findByAssignedTo = (req, res) => {
+  const authHeader = req.headers.authorization;
+
+  if (!authHeader) {
+    return res.status(401).json({
+      message: "Authorization header missing"
+    });
+  }
+
+  const token = authHeader.split(" ")[1];
+  const decoded = jwt.verify(token, "secretkey");
+
+  const userId = decoded.id;
+
+  // ✅ rename here
+  task.findByAssignedTo(userId, (err, allTasks) => {
+    if (err) {
+      return res.status(500).json({
+        message: "Error fetching tasks",
+        error: err
+      });
+    }
+
+    // ✅ rename here
+    task.pendingTasks(userId, (err, pending) => {
+      if (err) {
+        return res.status(500).json({
+          message: "Error fetching tasks",
+          error: err
+        });
+      }
+
+      task.completedTasks(userId, (err, completed) => {
+      if (err) {
+        return res.status(500).json({
+          message: "Error fetching tasks",
+          error: err
+        });
+      }
+
+      res.status(200).json({
+        totalTasks: allTasks.length,
+        pendingTasks: pending.length,
+        data: allTasks,
+        pendingData: pending,
+        completedTasks: completed.length
+      });
+    });
+    });
+  });
+};

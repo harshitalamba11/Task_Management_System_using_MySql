@@ -16,6 +16,18 @@ const Task = {
     find: (id,callback) => {
         const sql= "SELECT * FROM tasks WHERE id = ? ";
         db.query(sql, [id], callback);
+    },
+    findByAssignedTo: (id,callback) => {
+        const sql= "SELECT * FROM tasks WHERE assigned_to = ? ";
+        db.query(sql, [id], callback);
+    },
+    pendingTasks: (id,callback) => {
+        const sql= "SELECT * FROM tasks WHERE assigned_to = ? && status = 'todo' ";
+        db.query(sql, [id], callback);
+    },
+    completedTasks: (id,callback) => {
+        const sql= "SELECT * FROM tasks WHERE assigned_to = ? && status = 'completed' ";
+        db.query(sql, [id], callback);
     }
 }
 

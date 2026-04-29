@@ -1,6 +1,6 @@
 import express from 'express';
 
-import { createTask, deleteTask, find, updateTask } from "../controllers/task.js";
+import { createTask, deleteTask, find, updateTask, findByAssignedTo } from "../controllers/task.js";
 
 const router=express.Router();
 
@@ -8,5 +8,7 @@ router.post('/createTask',createTask);
 router.delete('/deleteTask/:id',deleteTask);
 router.put('/updateTask/:id',updateTask);
 router.get('/find/:id',find);
+router.get('/findTasks',findByAssignedTo);
+// router.get('/completedTasks',)
 
 export default router;

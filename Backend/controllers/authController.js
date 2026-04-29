@@ -160,7 +160,9 @@ export const login = (req,res) => {
         res.status(200).json({
             message: "LOGIN SUCCESSFUL",
             name: result[0].name,
-            token: token
+            token: token,
+            role: result[0].role,
+            id: result[0].id
         })
     })
 }
