@@ -2,165 +2,265 @@ import project from '../db/project.js';
 import jwt from "jsonwebtoken";
 import activity_log from '../db/activity_log.js';
 
-export const createProject = (req,res) => {
-    console.log("CREATE TASK API HIT");
+/* ================= CREATE PROJECT ================= */
+export const createProject = (req, res) => {
+    console.log("CREATE PROJECT API HIT");
+
     const authHeader = req.headers.authorization;
-    if(!authHeader){
-        return res.status(401).json({
-            message: "Authorization header missing. Please login first."
-        })
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
-    if(!authHeader.startsWith("Bearer ")){
-        return res.status(401).json({
-            message: "Invalid Authorization format"
-        });
-    }
-    
+
     const token = authHeader.split(" ")[1];
-    if(!token){
-        return res.status(401).json({
-            message: "Token missing in Authorization header."
-        });
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "secretkey");
+    } catch {
+        return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    const decoded = jwt.verify(token,"secretkey");
-
+    if (decoded.role !== "admin") {
+        return res.status(403).json({ message: "Access denied" });
+    }
 
     const project_data = {
         project_name: req.body.name,
         description: req.body.description,
-        created_by: decoded.id
-    }
-    if(decoded.role==="admin"){
-        project.find(project_data,(err,results) => {
-            if(err) {
-                return res.status(101).json({ message: "Error checking project"});
-            }
-            if (results.length > 0) {
-                return res.status(400).json({message: "Project already exists!!!"
-                })
-            }
-        
+        created_by: decoded.id,
+        assigned_to: req.body.assigned_to
+    };
 
-        project.create(project_data,(err,result)=>{
-            if(err) {
+    project.findByName(project_data.project_name, (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: "Error checking project" });
+        }
+
+        if (results.length > 0) {
+            return res.status(400).json({ message: "Project already exists" });
+        }
+
+        project.create(project_data, (err, result) => {
+            if (err) {
                 return res.status(500).json({
                     message: "Error creating project",
                     error: err
                 });
             }
-            activity_log.create(decoded.id,`Project Created name= ${project_data.project_name}`,(err,results)=>{
-                if(err){
-                    console.log("Log error:",err);
-                }
-            });
-            res.status(201).json({
-                message:"Project created successfully",
+
+            activity_log.create(
+                decoded.id,
+                `Project Created name=${project_data.project_name}`,
+                () => {}
+            );
+
+            return res.status(201).json({
+                message: "Project created successfully",
                 projectId: result.insertId
-            })
+            });
         });
-    }
-)
-    }
-    else{
-        res.status(404).json({
-            message: "Access denied"
-        });
-    }
-}
+    });
+};
 
-export const getAllProjects = (req,res) => {
-    console.log("DELETE TASK API HIT");
+
+/* ================= GET ALL PROJECTS (ADMIN) ================= */
+export const getAllProjects = (req, res) => {
+    console.log("GET ALL PROJECTS API HIT");
+
     const authHeader = req.headers.authorization;
-    if(!authHeader){
-        return res.status(401).json({
-            message: "Authorization header missing. Please login first."
-        })
-    }
-    if(!authHeader.startsWith("Bearer ")){
-        return res.status(401).json({
-            message: "Invalid Authorization format"
-        });
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
 
     const token = authHeader.split(" ")[1];
 
-    const decoded = jwt.verify(token,"secretkey");
-
-    if ( decoded.role === "admin" ){
-        project.getAllProjects((err,results)=>{
-            if(err){
-                return res.status(500).json({
-                        message: "Error fetching project!!!",
-                        error: err
-                });
-            }
-            res.status(201).json({
-                message:`Successfully fetched... All data is fetched by Admin ${decoded.name}`,
-                data: results
-            })
-        })
-    }
-    else {
-        res.status(404).json({
-            message: "Access denied"
-        });
-    }
-}
-
-export const deleteProjects = (req,res) => {
-    const authHeader = req.headers.authorization;
-    if(!authHeader){
-        return res.status(401).json({
-            message: "Authorization header missing. Please login first."
-        })
-    }
-    if(!authHeader.startsWith("Bearer ")){
-        return res.status(401).json({
-            message: "Invalid Authorization format"
-        });
-    }
-    
-    const token = authHeader.split(" ")[1];
-    if(!token){
-        return res.status(401).json({
-            message: "Token missing in Authorization header."
-        });
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "secretkey");
+    } catch {
+        return res.status(401).json({ message: "Invalid or expired token" });
     }
 
-    const decoded = jwt.verify(token,"secretkey");
-    if (decoded.role==="admin") {
-        
-        const id=req.params.id;
-    // project.findByName(name,(err,results)=>{
-        project.find(id,(err,results) => {
-            if(err) {
-                return res.status(101).json({ message: "Error checking project"});
-            }
+    if (decoded.role !== "admin") {
+        return res.status(403).json({ message: "Access denied" });
+    }
 
-            project.deleteProject(id, (err,result) => {
-                if(err) {
-                    return res.status(404).json({
-                        message: "Error deleting the project"
-                    })
-                }
-                activity_log.create(decoded.id,`Project Deleted id = ${id}`,(err,results)=>{
-                    if(err){
-                        console.log("Log error:",err);
-                    }
-                });
-                res.status(200).json({
-                    message: "Successfully deleted!!!"
-                })
-            })
+    project.getAllProjects((err, results) => {
+        if (err) {
+            return res.status(500).json({
+                message: "Error fetching projects",
+                error: err
+            });
         }
-        )
-    // })
-}
-    else {
-        return res.status(404).json({
-            message: `No access for ${decoded.name}`
-        })
+
+        return res.status(200).json({
+            message: `All projects fetched by Admin ${decoded.name}`,
+            data: results
+        });
+    });
+};
+
+
+/* ================= GET PROJECTS BY USER ================= */
+export const getProjectsById = (req, res) => {
+    console.log("GET PROJECTS BY ID API HIT");
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
     }
 
-}
+    const token = authHeader.split(" ")[1];
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "secretkey");
+    } catch {
+        return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    project.getProjectsById(decoded.id, (err, results) => {
+        if (err) {
+            return res.status(500).json({
+                message: "Error fetching projects",
+                error: err
+            });
+        }
+        console.log("USER ID:", decoded.id);
+        console.log("RESULTS:", results);
+        return res.status(200).json({
+            message: `Projects fetched for ${decoded.name}`,
+            data: results   // ✅ fixed (not length)
+            
+        });
+    });
+};
+
+
+/* ================= DELETE PROJECT ================= */
+export const deleteProjects = (req, res) => {
+    console.log("DELETE PROJECT API HIT");
+
+    const authHeader = req.headers.authorization;
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "secretkey");
+    } catch {
+        return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    if (decoded.role !== "admin") {
+        return res.status(403).json({ message: "Access denied" });
+    }
+
+    const id = req.params.id;
+
+    project.find(id, (err, results) => {
+        if (err) {
+            return res.status(500).json({ message: "Error checking project" });
+        }
+
+        if (results.length === 0) {
+            return res.status(404).json({ message: "Project not found" });
+        }
+
+        project.deleteProject(id, (err) => {
+            if (err) {
+                return res.status(500).json({
+                    message: "Error deleting project"
+                });
+            }
+
+            activity_log.create(
+                decoded.id,
+                `Project Deleted id=${id}`,
+                () => {}
+            );
+
+            return res.status(200).json({
+                message: "Project deleted successfully"
+            });
+        });
+    });
+};
+export const getUsersUnderManager = (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "secretkey");
+    } catch {
+        return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    
+    if (decoded.role !== "project_manager" && decoded.role !== "admin") {
+        return res.status(403).json({
+            message: "Access denied"
+        });
+    }
+
+    project.getUsersUnderManager(decoded.id, (err, results) => {
+        if (err) {
+            return res.status(500).json({
+                message: "Error fetching users",
+                error: err
+            });
+        }
+
+        return res.status(200).json({
+            message: "Users under manager fetched successfully",
+            data: results
+        });
+    });
+};
+
+export const getPendingTasks = (req, res) => {
+    const authHeader = req.headers.authorization;
+
+    if (!authHeader || !authHeader.startsWith("Bearer ")) {
+        return res.status(401).json({ message: "Unauthorized" });
+    }
+
+    const token = authHeader.split(" ")[1];
+
+    let decoded;
+    try {
+        decoded = jwt.verify(token, "secretkey");
+    } catch {
+        return res.status(401).json({ message: "Invalid or expired token" });
+    }
+
+    
+    if (decoded.role !== "project_manager" && decoded.role !== "admin") {
+        return res.status(403).json({
+            message: "Access denied"
+        });
+    }
+
+    project.getPendingTasks(decoded.id, (err, results) => {
+        if (err) {
+            return res.status(500).json({
+                message: "Error fetching users",
+                error: err
+            });
+        }
+
+        return res.status(200).json({
+            message: "Users under manager fetched successfully",
+            data: results
+        });
+    });
+};

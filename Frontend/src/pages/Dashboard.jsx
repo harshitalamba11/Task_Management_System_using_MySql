@@ -46,14 +46,59 @@ const AdminDashboard = async() => {
 };
 
 const ManagerDashboard = () => {
+  const [totalProjects,settotalProjects]= useState(0);
+  const [teamMembers,setTeamMembers]= useState(0);
+  const [pendingTasks,set]= useState(0);
+  
+  const { token } = useAuth();
+  useEffect(() => {
+    fetch("http://localhost:3000/project/my-projects",{
+      headers: {
+      Authorization: `Bearer ${token}`
+    }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      settotalProjects(data.data.length); // correct
+    })
+    .catch(err => console.log(err));
+
+
+    fetch("http://localhost:3000/project/manager/users",{
+      headers: {
+      Authorization: `Bearer ${token}`
+    }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      setTeamMembers(data.data.length); // correct
+    })
+    .catch(err => console.log(err));
+
+
+    fetch("http://localhost:3000/project/tasks-pending",{
+      headers: {
+      Authorization: `Bearer ${token}`
+    }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      setpendingTasks(data.data.length); // correct
+    })
+    .catch(err => console.log(err));
+
+}, []);
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-white">Project Manager</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Card title="My Projects" value="5" icon={FolderKanban} />
-        <Card title="Team Members" value="12" icon={Users} />
-        <Card title="Pending Tasks" value="18" icon={CheckSquare} />
+        <Card title="My Projects" value={totalProjects} icon={FolderKanban} />
+        <Card title="Team Members" value={teamMembers} icon={Users} />
+        <Card title="Pending Tasks" value={pendingTasks} icon={CheckSquare} />
       </div>
 
       <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
