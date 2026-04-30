@@ -14,16 +14,58 @@ const Card = ({ title, value, icon: Icon }) => (
   </div>
 );
 
-const AdminDashboard = async() => {
-   
+const AdminDashboard = () => {
+  const {token} = useAuth();
+  const [managers,setmanagers]= useState(0);
+  const [projects,setprojects]= useState(0);
+  const [tasks,settasks]= useState(0);
+  useEffect(() => {
+    fetch("http://localhost:3000/user/managers",{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      setmanagers(data.data.length);
+    })
+    .catch(err => console.log(err));
+
+
+    fetch("http://localhost:3000/project/projects",{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      setprojects(data.data.length);
+    })
+    .catch(err => console.log(err));
+
+    fetch("http://localhost:3000/task/tasks",{
+      headers: {
+        Authorization: `Bearer ${token}`
+      }
+    })
+    .then(res => res.json())
+    .then(data => {
+      console.log(data);
+      settasks(data.data.length);
+    })
+    .catch(err => console.log(err));
+
+  },[]);
   return (
     <div className="space-y-6">
       <h1 className="text-2xl font-semibold text-white">Admin Dashboard</h1>
 
       <div className="grid grid-cols-1 md:grid-cols-3 gap-5">
-        <Card title="Total Users" value="6" icon={Users} />
-        <Card title="Total Projects" value="8" icon={FolderKanban} />
-        <Card title="Total Tasks" value="142" icon={CheckSquare} />
+        <Card title="Total Managers" value={managers} icon={Users} />
+        <Card title="Total Projects" value={projects} icon={FolderKanban} />
+        <Card title="Total Tasks" value={tasks} icon={CheckSquare} />
       </div>
 
       <div className="bg-gray-800 rounded-2xl p-6 border border-gray-700">
@@ -49,7 +91,7 @@ const ManagerDashboard = () => {
   const [totalProjects,settotalProjects]= useState(0);
   const [teamMembers,setTeamMembers]= useState(0);
   const [pendingTasks,set]= useState(0);
-  
+
   const { token } = useAuth();
   useEffect(() => {
     fetch("http://localhost:3000/project/my-projects",{

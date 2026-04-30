@@ -23,6 +23,10 @@ const User = {
     find: (id,callback) => {
         const sql = "SELECT * FROM users WHERE id = ?";
         db.query(sql,[id],callback);
+    },
+    managers: (callback) => {
+        const sql = "SELECT * FROM users WHERE role = 'project_manager'";
+        db.query(sql,callback);
     }
 }
 

@@ -216,3 +216,21 @@ export const findByAssignedTo = (req, res) => {
     });
   });
 };
+
+export const getAllTasks = (req,res) => {
+    task.getAllTasks((err,result)=>{
+        if(err){
+            return res.status(404).json({
+                message: "Error fetching the required task!!!"
+            });
+        }
+        if(result.length == 0){
+            return res.status(404).json({
+                message: "No task found!!!"
+            });
+        }
+        res.status(200).json({
+            data: result
+        });
+    })
+}

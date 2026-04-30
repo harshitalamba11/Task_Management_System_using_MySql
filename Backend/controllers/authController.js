@@ -189,3 +189,26 @@ export const find = (req,res) => {
         });
     })
 }
+
+export const managers = (req,res) => {
+    // const id= req.params.id;
+    User.managers( (err,result)=> {
+        if(err) {
+            res.status(404).json({
+                message: "Error finding the user!!!",
+                error: err
+            })
+        }
+
+        if(result.length == 0){
+            res.status(404).json({
+                message: "User not found!!!"
+            });
+        }
+
+        res.status(200).json({
+            message: "User fetched",
+            data: result
+        });
+    })
+}

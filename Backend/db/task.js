@@ -28,6 +28,10 @@ const Task = {
     completedTasks: (id,callback) => {
         const sql= "SELECT * FROM tasks WHERE assigned_to = ? && status = 'completed' ";
         db.query(sql, [id], callback);
+    },
+    getAllTasks: (callback) => {
+        const sql= "SELECT * FROM tasks";
+        db.query(sql, callback);
     }
 }
 
