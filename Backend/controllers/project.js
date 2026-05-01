@@ -4,7 +4,6 @@ import activity_log from '../db/activity_log.js';
 
 /* ================= CREATE PROJECT ================= */
 export const createProject = (req, res) => {
-    console.log("CREATE PROJECT API HIT");
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -65,7 +64,6 @@ export const createProject = (req, res) => {
 
 /* ================= GET ALL PROJECTS (ADMIN) ================= */
 export const getAllProjects = (req, res) => {
-    console.log("GET ALL PROJECTS API HIT");
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -103,7 +101,6 @@ export const getAllProjects = (req, res) => {
 
 /* ================= GET PROJECTS BY USER ================= */
 export const getProjectsById = (req, res) => {
-    console.log("GET PROJECTS BY ID API HIT");
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {
@@ -126,11 +123,11 @@ export const getProjectsById = (req, res) => {
                 error: err
             });
         }
-        console.log("USER ID:", decoded.id);
-        console.log("RESULTS:", results);
+        // console.log("USER ID:", decoded.id);
+        // console.log("RESULTS:", results);
         return res.status(200).json({
             message: `Projects fetched for ${decoded.name}`,
-            data: results   // ✅ fixed (not length)
+            data: results
             
         });
     });
@@ -139,7 +136,6 @@ export const getProjectsById = (req, res) => {
 
 /* ================= DELETE PROJECT ================= */
 export const deleteProjects = (req, res) => {
-    console.log("DELETE PROJECT API HIT");
 
     const authHeader = req.headers.authorization;
     if (!authHeader || !authHeader.startsWith("Bearer ")) {

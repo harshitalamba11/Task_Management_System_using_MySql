@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAuth } from "../AuthContext";
-import { Navigate } from "react-router-dom";
+import { Link, Navigate } from "react-router-dom";
 import { Users, FolderKanban, CheckSquare, LogOut } from "lucide-react";
 
 
@@ -27,7 +27,7 @@ const AdminDashboard = () => {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
+      // console.log(data);
       setmanagers(data.data.length);
     })
     .catch(err => console.log(err));
@@ -40,7 +40,7 @@ const AdminDashboard = () => {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
+      // console.log(data);
       setprojects(data.data.length);
     })
     .catch(err => console.log(err));
@@ -72,15 +72,15 @@ const AdminDashboard = () => {
         <h2 className="text-lg font-semibold text-white mb-4">User Management</h2>
 
         <div className="flex gap-4">
-          <button className="bg-indigo-600 px-4 py-2 rounded-lg text-white">
+          <Link to="/register"><button className="bg-indigo-600 px-4 py-2 rounded-lg text-white">
             Create User
-          </button>
-          <button className="bg-gray-700 px-4 py-2 rounded-lg text-white">
+          </button></Link>
+          <Link to="/allUsers"><button className="bg-gray-700 px-4 py-2 rounded-lg text-white">
             Update User
-          </button>
-          <button className="bg-red-600 px-4 py-2 rounded-lg text-white">
+          </button></Link>
+          <Link to="/allUsers"><button className="bg-red-600 px-4 py-2 rounded-lg text-white">
             Delete User
-          </button>
+          </button></Link>
         </div>
       </div>
     </div>
@@ -101,7 +101,7 @@ const ManagerDashboard = () => {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
+      // console.log(data);
       settotalProjects(data.data.length); // correct
     })
     .catch(err => console.log(err));
@@ -127,7 +127,7 @@ const ManagerDashboard = () => {
     })
     .then(res => res.json())
     .then(data => {
-      console.log(data);
+      // console.log(data);
       setpendingTasks(data.data.length); // correct
     })
     .catch(err => console.log(err));
@@ -225,17 +225,25 @@ export default function Dashboard() {
     <div className="min-h-screen bg-gray-900 text-white flex">
       {/* Sidebar */}
       <aside className="w-64 bg-gray-950 border-r border-gray-800 p-5">
-        {/* <h1 className="text-xl font-bold mb-6">TaskFlowSpirit</h1> */}
-
+    
         <nav className="space-y-2">
-          <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800">
-            Dashboard
+          <button className="text-xl text-gray-400 bold w-full text-left px-3 py-2 rounded-lg hover:bg-gray-900">
+            {role?.
+              charAt(0).toUpperCase() + role?.slice(1)
+            } - {name}
           </button>
-          <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800">
+          <Link to="/projects"><button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800">
             Projects
           </button>
+          </Link>
           <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800">
             Tasks
+          </button>
+          <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800">
+            Project Mangers
+          </button>
+          <button className="w-full text-left px-3 py-2 rounded-lg hover:bg-gray-800">
+            Team Members
           </button>
         </nav>
 
